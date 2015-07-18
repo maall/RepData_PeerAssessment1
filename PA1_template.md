@@ -3,8 +3,8 @@ title: "Assignment 1"
 author: "Author - ML"
 date: "Saturday, July 18, 2015"
 output:
-  html_document: null
   pdf_document: default
+  html_document: null
 keep_md: yes
 ---
 
@@ -28,22 +28,40 @@ The dataset is stored in a comma-separated-value (CSV) file and there are a tota
 ### The Code
 ####Load the data
 
-```{r}
+
+```r
 data_row<-read.csv("repdata_data_activity/activity.csv")
 str(data_row)
 ```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
 ####Load dplyr library
-```{r, message=FALSE, warning=FALSE}
+
+```r
 library(dplyr)
 ```
 ####Process the data - remove NA
-```{r}
+
+```r
 data<-filter(data_row,!is.na(steps))
 str(data)
 ```
+
+```
+## 'data.frame':	15264 obs. of  3 variables:
+##  $ steps   : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ date    : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 2 2 2 2 2 2 2 2 2 2 ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
 ###1. What is mean total number of steps taken per day?
 ####Calculate the total number of steps taken per day
-```{r}
+
+```r
 sum_steps_day<-
         data %>%
         group_by(date) %>%
@@ -51,23 +69,39 @@ sum_steps_day<-
 colnames(sum_steps_day)<-c('date','sum_steps')
 ```
 ####Make a histogram of the total number of steps taken each day
-```{r}
+
+```r
 hist(sum_steps_day$sum_steps, breaks=20,col="lightslateblue", border='white',
      xlab='Total number of steps per day',
      main="Histogram of the total number of steps per day")
 box()
 ```
 
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png) 
+
 ####Calculate and report the mean and median of the total number of steps taken per day 
-```{r}
+
+```r
 print(mean(sum_steps_day$sum_steps))
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 print(median(sum_steps_day$sum_steps))
+```
+
+```
+## [1] 10765
 ```
 *The mean and median total number of steps per day are almost the same.*
 
 ###2. What is the average daily activity pattern?
 ####Make a time series plot of interval and the average number of steps taken, averaged across all days
-```{r}
+
+```r
 avg_steps_per_interval<-
         data %>%
         group_by(interval) %>%
@@ -79,27 +113,41 @@ plot(mean_steps ~ interval, data = avg_steps_per_interval, type = "l", col="deep
 box()
 ```
 
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png) 
+
 ###Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
-```{r}
+
+```r
 a<-avg_steps_per_interval$interval[avg_steps_per_interval$mean_steps==max(avg_steps_per_interval$mean_steps)]
 print(a)
+```
+
+```
+## [1] 835
 ```
 *The interval number 835.*
 
 ###3. Imputing missing values
 ####Calculate and report the total number of missing values in the dataset
-```{r}
+
+```r
 missing<-nrow(data_row)-nrow(data)
 print(missing)
 ```
+
+```
+## [1] 2304
+```
 ####Filling in all of the missing values in the dataset, create a new dataset
-```{r}
+
+```r
 mean<-round(mean(data$steps))
 data_new<-data_row
 data_new$steps[is.na(data_new$steps)]<-mean
 ```
 ####Make a histogram of the total number of steps taken each day
-```{r}
+
+```r
 sum_steps_day_new<-
         data_new %>%
         group_by(date) %>%
@@ -113,17 +161,32 @@ hist(sum_steps_day_new$sum_steps, breaks=20,col="mediumseagreen", border='white'
 box()
 ```
 
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) 
+
 ####Calculate and report the mean and median total number of steps taken per day
-```{r}
+
+```r
 print(mean(sum_steps_day_new$sum_steps))
+```
+
+```
+## [1] 10751.74
+```
+
+```r
 print(median(sum_steps_day_new$sum_steps))
+```
+
+```
+## [1] 10656
 ```
 
 *Mean and median differ from the estimates from the first part of the assignment,
 However the impact of imputing missing is low.*
 
 ###4. Are there differences in activity patterns between weekdays and weekends?
-```{r, warning=FALSE}
+
+```r
 data_new$date<-as.Date(data_new$date)
 library(lubridate)
 data_new_w<-mutate(data_new,week=wday(data_new$date))
@@ -133,7 +196,8 @@ data_new_w$week[data_new_w$week==7 | data_new_w$week==1 ]<-"weekend"
 
 #### Make a panel plot containing a time series plot of the 5-minute interval and the average number of steps taken, averaged across all weekday days or weekend days
 
-```{r}
+
+```r
 avg_steps_per_week <- aggregate(data_new_w$steps, by = list(data_new_w$interval, data_new_w$week), mean)
 colnames(avg_steps_per_week)<-c("interval","week","steps") 
 data_new_w$week<-as.factor(data_new_w$week) 
@@ -144,4 +208,6 @@ with(avg_steps_per_week[avg_steps_per_week$week=="weekday",],type="l", lines(ste
 with(avg_steps_per_week[avg_steps_per_week$week=="weekend",],type="l", lines(steps ~ interval, col="indianred1" ))  
 legend("topright", lty=c(1,1), col = c("chartreuse4", "indianred1"), legend = c("Weekday", "Weekend"), seg.len=5)
 ```
+
+![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14-1.png) 
 
